@@ -34,14 +34,7 @@ export interface Session {
 }
 
 export interface Store extends EventEmitter {
-    get(
-        sessionID: string,
-        callback: (err: any, session?: SessionData | null) => void
-    ): void;
-    set(
-        sessionID: string,
-        session: SessionData,
-        callback?: (err?: any) => void
-    ): void;
+    get(sessionID: string, callback: (err: any, session?: SessionData | null) => void): void;
+    set(sessionID: string, session: SessionData, callback?: (err?: any) => void): void;
     destroy(sessionID: string, callback?: (err?: any) => void): void;
 }

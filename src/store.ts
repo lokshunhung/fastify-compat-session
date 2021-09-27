@@ -1,42 +1,22 @@
 import { EventEmitter } from "stream";
 import { Session } from "./session";
-import type {
-    Session as SessionType,
-    SessionData,
-    Store as StoreType,
-} from "./types";
+import type { Session as SessionType, SessionData, Store as StoreType } from "./types";
 
 export abstract class Store extends EventEmitter implements StoreType {
-    declare generate: (ref: {
-        set sessionID(_: string);
-        set session(_: SessionType);
-    }) => void;
+    declare generate: (ref: { set sessionID(_: string); set session(_: SessionType) }) => void;
 
-    abstract get(
-        sessionID: string,
-        callback: (err: any, session?: SessionData) => void
-    ): void;
-    abstract set(
-        sessionID: string,
-        session: SessionData,
-        callback?: (err?: any) => void
-    ): void;
+    abstract get(sessionID: string, callback: (err: any, session?: SessionData) => void): void;
+    abstract set(sessionID: string, session: SessionData, callback?: (err?: any) => void): void;
     abstract destroy(sessionID: string, callback?: (err?: any) => void): void;
 
-    regenerate(
-        ref: { sessionID: string; set session(_: SessionType) },
-        callback: (err?: any) => void
-    ): void {
+    regenerate(ref: { sessionID: string; set session(_: SessionType) }, callback: (err?: any) => void): void {
         this.destroy(ref.sessionID, (err) => {
             this.generate(ref);
             callback(err);
         });
     }
 
-    load(
-        sessionID: string,
-        callback: (err?: any, session?: SessionData) => void
-    ): void {
+    load(sessionID: string, callback: (err?: any, session?: SessionData) => void): void {
         this.get(sessionID, (err, session) => {
             if (err) return callback(err);
             if (!session) return callback();
@@ -44,10 +24,7 @@ export abstract class Store extends EventEmitter implements StoreType {
         });
     }
 
-    createSession(
-        options: { sessionID: string; sessionStore: StoreType },
-        sessionData: SessionData
-    ): SessionType {
+    createSession(options: { sessionID: string; sessionStore: StoreType }, sessionData: SessionData): SessionType {
         const session = new Session(sessionData);
         return session;
     }
@@ -63,19 +40,12 @@ export class MemoryStore extends Store {
         this[kStoreMap] = storeMap;
     }
 
-    override get(
-        sessionID: string,
-        callback: (err: any, session?: SessionData) => void
-    ): void {
+    override get(sessionID: string, callback: (err: any, session?: SessionData) => void): void {
         const session = this[kStoreMap].get(sessionID);
         callback(null, session);
     }
 
-    override set(
-        sessionID: string,
-        session: SessionData,
-        callback?: (err?: any) => void
-    ): void {
+    override set(sessionID: string, session: SessionData, callback?: (err?: any) => void): void {
         this[kStoreMap].set(sessionID, session);
         callback(null);
     }

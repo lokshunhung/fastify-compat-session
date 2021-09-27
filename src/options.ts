@@ -6,17 +6,12 @@ function idGenerator(): string {
     return uidSync(24);
 }
 
-export function normalizeOptions(
-    options: CompatSessionOptions
-): asserts options is NormalizedOptions {
-    options.secret = Array.isArray(options.secret)
-        ? options.secret
-        : [options.secret];
+export function normalizeOptions(options: CompatSessionOptions): asserts options is NormalizedOptions {
+    options.secret = Array.isArray(options.secret) ? options.secret : [options.secret];
     options.cookieName ||= "sessionId";
     // options.cookie
     options.store ||= new MemoryStore();
     options.idGenerator ||= idGenerator;
-    options.saveUninitialized =
-        options.saveUninitialized != null ? options.saveUninitialized : true;
+    options.saveUninitialized = options.saveUninitialized != null ? options.saveUninitialized : true;
     options.rolling = options.rolling != null ? options.rolling : true;
 }
