@@ -1,5 +1,26 @@
 import type { EventEmitter } from "events";
+import type { FastifyRequest } from "fastify";
 import type { CookieSerializeOptions } from "fastify-cookie";
+
+export interface CompatSessionOptions {
+    secret: string | Array<string>;
+    cookieName?: string;
+    // cookie?: any;
+    store?: Store;
+    idGenerator?: (request: FastifyRequest) => string;
+    saveUninitialized?: boolean;
+    rolling?: boolean;
+}
+
+export interface NormalizedOptions {
+    secret: Array<string>;
+    cookieName: string;
+    // cookie: any
+    store: Store;
+    idGenerator: (request: FastifyRequest) => string;
+    saveUninitialized: boolean;
+    rolling: boolean;
+}
 
 export interface SessionData {}
 
