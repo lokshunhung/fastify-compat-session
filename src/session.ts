@@ -1,22 +1,34 @@
 import type { CookieSerializeOptions } from "fastify-cookie";
-import type { Session as SessionType } from "./types";
+import { Cookie, kOriginal } from "./cookie";
+import type { Session as SessionType, SessionStoreValueCookie } from "./types";
 
-const kData = Symbol("session.data");
-const kCookieOptions = Symbol("session.cookieOption");
+export const kData = Symbol("session.data");
+
+export type RequiredAction = "update" | "delete" | "regenerate";
 
 export class Session implements SessionType {
+    declare id: string;
     declare [kData]: Record<string, any>;
-    declare [kCookieOptions]: CookieSerializeOptions;
-    declare changed: boolean;
-    declare deleted: boolean;
-    declare shouldRegenerate: boolean;
+    declare cookie: Cookie;
+    declare action: RequiredAction | null;
+    declare rotated: boolean;
 
-    constructor(data: Record<string, any>) {
+    private constructor(id: string, data: Record<string, any>, cookie: Cookie) {
+        this.id = id;
         this[kData] = data;
-        this[kCookieOptions] = null;
-        this.changed = false;
-        this.deleted = false;
-        this.shouldRegenerate = false;
+        this.cookie = cookie;
+        this.action = null;
+        this.rotated = false;
+    }
+
+    static create(id: string, data: Record<string, any>, cookieOptions: CookieSerializeOptions | null): Session {
+        const cookie = Cookie.create(cookieOptions);
+        return new Session(id, data, cookie);
+    }
+
+    static restore(id: string, data: Record<string, any>, storeCookie: SessionStoreValueCookie): Session {
+        const cookie = Cookie.fromSessionStore(storeCookie);
+        return new Session(id, data, cookie);
     }
 
     get(key: string): any {
@@ -24,24 +36,31 @@ export class Session implements SessionType {
     }
 
     set(key: string, value: any): void {
+        this.action = "update";
         this[kData][key] = value;
     }
 
     delete(): void {
-        this.changed = true;
-        this.deleted = true;
+        this.action = "delete";
     }
 
-    options(opts: CookieSerializeOptions): void {
-        this[kCookieOptions] = opts;
+    options(cookieOptions: CookieSerializeOptions): void {
+        if ("expires" in cookieOptions && "maxAge" in cookieOptions) {
+            throw new Error("Session#options should not be set with both `expires` & `maxAge`");
+        }
+        const prevOriginal = this.cookie[kOriginal];
+        // @ts-expect-error -- behaviour from `fastify-secure-session` is to overwrite all cookie options, bypass creation logic in static factory with the private constructor here
+        this.cookie = new Cookie(cookieOptions);
+        this.cookie[kOriginal] = prevOriginal;
     }
 
     touch(): void {
-        this.changed = true;
+        if (this.action === null) {
+            this.action = "update";
+        }
     }
 
     regenerate(): void {
-        this.deleted = true;
-        this.shouldRegenerate = true;
+        this.action = "regenerate";
     }
 }

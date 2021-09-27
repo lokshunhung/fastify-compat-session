@@ -1,52 +1,49 @@
 import { EventEmitter } from "stream";
-import { Session } from "./session";
-import type { Session as SessionType, SessionData, Store as StoreType } from "./types";
+import type { SessionStoreValue, Store as StoreType } from "./types";
+
+function incompatibleMethodMessage(method: string): string {
+    return `${method} is not implemented, fastify-compat-session is not 100% direct port of express-session`;
+}
 
 export abstract class Store extends EventEmitter implements StoreType {
-    declare generate: (ref: { set sessionID(_: string); set session(_: SessionType) }) => void;
-
-    abstract get(sessionID: string, callback: (err: any, session?: SessionData) => void): void;
-    abstract set(sessionID: string, session: SessionData, callback?: (err?: any) => void): void;
+    abstract get(sessionID: string, callback: (err: any, value?: SessionStoreValue) => void): void;
+    abstract set(sessionID: string, value: SessionStoreValue, callback?: (err?: any) => void): void;
     abstract destroy(sessionID: string, callback?: (err?: any) => void): void;
 
-    regenerate(ref: { sessionID: string; set session(_: SessionType) }, callback: (err?: any) => void): void {
-        this.destroy(ref.sessionID, (err) => {
-            this.generate(ref);
-            callback(err);
-        });
+    generate(req: any): any {
+        throw new Error(incompatibleMethodMessage("Store#generate"));
     }
 
-    load(sessionID: string, callback: (err?: any, session?: SessionData) => void): void {
-        this.get(sessionID, (err, session) => {
-            if (err) return callback(err);
-            if (!session) return callback();
-            callback(null, { sessionID, sessionStore: this });
-        });
+    regenerate(req: any, callback: any): any {
+        throw new Error(incompatibleMethodMessage("Store#regenerate"));
     }
 
-    createSession(options: { sessionID: string; sessionStore: StoreType }, sessionData: SessionData): SessionType {
-        const session = new Session(sessionData);
-        return session;
+    load(sid: string, callback: any): any {
+        throw new Error(incompatibleMethodMessage("Store#load"));
+    }
+
+    createSession(req: any, sess: any): any {
+        throw new Error(incompatibleMethodMessage("Store#createSession"));
     }
 }
 
 const kStoreMap = Symbol("memoryStore.storeMap");
 
 export class MemoryStore extends Store {
-    declare [kStoreMap]: Map<string, SessionData>;
+    declare [kStoreMap]: Map<string, SessionStoreValue>;
 
-    constructor(storeMap: Map<string, SessionData> = new Map()) {
+    constructor(storeMap: Map<string, SessionStoreValue> = new Map()) {
         super();
         this[kStoreMap] = storeMap;
     }
 
-    override get(sessionID: string, callback: (err: any, session?: SessionData) => void): void {
+    override get(sessionID: string, callback: (err: any, value?: SessionStoreValue) => void): void {
         const session = this[kStoreMap].get(sessionID);
         callback(null, session);
     }
 
-    override set(sessionID: string, session: SessionData, callback?: (err?: any) => void): void {
-        this[kStoreMap].set(sessionID, session);
+    override set(sessionID: string, value: SessionStoreValue, callback?: (err?: any) => void): void {
+        this[kStoreMap].set(sessionID, value);
         callback(null);
     }
 
