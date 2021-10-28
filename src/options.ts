@@ -8,10 +8,10 @@ function idGenerator(): string {
 
 export function normalizeOptions(options: CompatSessionOptions): asserts options is NormalizedOptions {
     options.secret = Array.isArray(options.secret) ? options.secret : [options.secret];
-    options.cookieName ||= "sessionId";
+    options.cookieName = options.cookieName || "sessionId";
     // options.cookie
-    options.store ||= new MemoryStore();
-    options.idGenerator ||= idGenerator;
+    options.store = options.store || new MemoryStore();
+    options.idGenerator = options.idGenerator || idGenerator;
     options.saveUninitialized = options.saveUninitialized != null ? options.saveUninitialized : true;
     options.rolling = options.rolling != null ? options.rolling : true;
 }
