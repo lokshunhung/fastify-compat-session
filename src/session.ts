@@ -22,7 +22,7 @@ export class Session implements SessionType {
     }
 
     static create(id: string, data: Record<string, any>, cookieOptions: CookieSerializeOptions | null): Session {
-        const cookie = Cookie.create(cookieOptions);
+        const cookie = Cookie.create(cookieOptions || {});
         return new Session(id, data, cookie);
     }
 

@@ -4,7 +4,7 @@ import { createOnSendHook } from "./hooks/on-send";
 import { normalizeOptions } from "./options";
 import type { CompatSessionOptions } from "./types";
 
-export default function (fastify: FastifyInstance, options: CompatSessionOptions) {
+export default async function (fastify: FastifyInstance, options: CompatSessionOptions) {
     normalizeOptions(options, fastify.log);
 
     const onRequestHook = createOnRequestHook(options);

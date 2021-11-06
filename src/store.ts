@@ -44,7 +44,7 @@ export class MemoryStore extends Store {
 
     override set(sessionID: string, value: SessionStoreValue, callback?: (err?: any) => void): void {
         this[kStoreMap].set(sessionID, value);
-        callback(null);
+        if (callback) callback(null);
     }
 
     override destroy(sessionID: string, callback?: (err?: any) => void): void {

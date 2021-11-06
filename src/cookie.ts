@@ -14,7 +14,7 @@ export class Cookie {
     declare [kOriginal]: string;
 
     get maxAge(): number {
-        return this.expires.getTime() - Date.now();
+        return this.expires!.getTime() - Date.now();
     }
     set maxAge(ms: number) {
         this.expires = new Date(Date.now() + ms);

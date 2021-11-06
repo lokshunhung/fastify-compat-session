@@ -36,7 +36,7 @@ export function createOnRequestHook(options: NormalizedOptions): onRequestHookHa
                 return done();
             }
 
-            const session = Session.restore(sessionID, sessionStoreValue.data, sessionStoreValue.cookie);
+            const session = Session.restore(sessionID, sessionStoreValue!.data, sessionStoreValue!.cookie);
             session.rotated = result.rotated;
 
             if (session.cookie && session.cookie.expires && session.cookie.expires.getTime() <= Date.now()) {

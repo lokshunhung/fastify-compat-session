@@ -6,7 +6,7 @@ import type { Store as AbstractStore } from "./store";
 export interface CompatSessionOptions {
     secret: string | Array<string>;
     cookieName?: string;
-    cookie?: CookieSerializeOptions;
+    cookie?: CookieSerializeOptions | null;
     store?: Store;
     idGenerator?: (request: FastifyRequest) => string;
     saveUninitialized?: boolean;
