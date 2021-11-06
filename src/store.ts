@@ -51,4 +51,8 @@ export class MemoryStore extends Store {
         this[kStoreMap].delete(sessionID);
         if (callback) callback(null);
     }
+
+    all(callback: (err: any, sessions: Array<SessionStoreValue>) => void) {
+        callback(null, Object.values(this[kStoreMap]));
+    }
 }
